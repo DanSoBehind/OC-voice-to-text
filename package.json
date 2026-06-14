@@ -1,0 +1,72 @@
+{
+  "name": "oc-voice-to-text",
+  "version": "1.0.0",
+  "description": "Global hotkey voice-to-text with local Whisper transcription (EN/DE/RU)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "keywords": [
+    "voice",
+    "whisper",
+    "transcription",
+    "electron"
+  ],
+  "author": {
+    "name": "OC Voice to Text"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^42.4.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.oc.voicetotext",
+    "productName": "OC Voice to Text",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json",
+      "package-lock.json",
+      "!**/*.map",
+      "!**/.DS_Store",
+      "!scripts/**/*",
+      "!models/**/*",
+      "!dist/**/*"
+    ],
+    "asar": true,
+    "compression": "normal",
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OC Voice to Text",
+      "deleteAppDataOnUninstall": false,
+      "include": ""
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    }
+  }
+}

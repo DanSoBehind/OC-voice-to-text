@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>capture</title>
+    <style>html,body{margin:0;background:#000;}</style>
+  </head>
+  <body>
+    <script>
+      const { ipcRenderer } = require('electron');
+      const TARGET_SR = 16000;
+      const BUFFER_SIZE = 4096;
+
+      let ctx = null;
+      let processor = null;
+      let source = null;
+      let stream = null;
+      let capturing = false;
+
+      function postState(state, extra) {
+        ipcRenderer.send('capture:state', { state, ...(extra || {}) });
+      }
+
+      function releaseStream() {
+        if (stream) {
+          try { stream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+          stream = null;
+        }
+        if (source) {
+          try { source.disconnect(); } catch (_) {}
+          source = null;
+        }
+      }
+
+      async function ensureContext() {
+        if (ctx) {
+          if (ctx.state === 'suspended') await ctx.resume();
+          return;
+        }
+        const AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC({ sampleRate: TARGET_SR });
+        processor = ctx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+        processor.connect(ctx.destination);
+        processor.onaudioprocess = (e) => {
+          if (!capturing) return;
+          const input = e.inputBuffer.getChannelData(0);
+          ipcRenderer.send('capture:data', input.slice());
+        };
+      }
+
+      async function acquireStream() {
+        if (stream && stream.active) return;
+        if (stream) releaseStream();
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+      }
+
+      async function rebindSource() {
+        if (source) {
+          try { source.disconnect(); } catch (_) {}
+          source = null;
+        }
+        source = ctx.createMediaStreamSource(stream);
+        source.connect(processor);
+      }
+
+      async function prewarm() {
+        try {
+          await ensureContext();
+          await acquireStream();
+          await rebindSource();
+          postState('prewarmed', { sampleRate: ctx.sampleRate });
+        } catch (err) {
+          postState('error', { message: err && err.message ? err.message : String(err) });
+        }
+      }
+
+      async function start() {
+        try {
+          if (!ctx) await ensureContext();
+          else if (ctx.state === 'suspended') await ctx.resume();
+          await acquireStream();
+          await rebindSource();
+          capturing = true;
+          postState('started', { sampleRate: ctx.sampleRate });
+        } catch (err) {
+          postState('error', { message: err && err.message ? err.message : String(err) });
+        }
+      }
+
+      function stop() {
+        capturing = false;
+        if (ctx) {
+          try { ctx.suspend(); } catch (_) {}
+        }
+        releaseStream();
+        postState('stopped');
+      }
+
+      ipcRenderer.on('capture:cmd', (_e, cmd) => {
+        if (cmd === 'prewarm') prewarm();
+        else if (cmd === 'prewarmThenStart') prewarmThenStart();
+        else if (cmd === 'start') start();
+        else if (cmd === 'stop') stop();
+      });
+
+      async function prewarmThenStart() {
+        await prewarm();
+        if (stream) start();
+      }
+    </script>
+  </body>
+</html>

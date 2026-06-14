@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';" />
+    <title>OC Voice to Text — Settings</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0; padding: 0;
+        background: #1e1e1e; color: #e6e6e6;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 13px;
+        min-height: 100vh;
+      }
+      .container { max-width: 480px; margin: 0 auto; padding: 18px 22px 22px; }
+      h1 { font-size: 16px; margin: 0 0 4px; font-weight: 600; }
+      .sub { color: #9aa0a6; font-size: 11px; margin-bottom: 18px; }
+      .row { margin-bottom: 14px; }
+      label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 12px; }
+      .hint { color: #9aa0a6; font-size: 11px; margin-top: 4px; }
+      input[type=text], select {
+        width: 100%;
+        padding: 8px 10px;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        color: #e6e6e6;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 13px;
+      }
+      input[type=text]:focus, select:focus { outline: none; border-color: #5aaef0; }
+      .hotkey-wrap { display: flex; gap: 6px; }
+      .hotkey-wrap input { flex: 1; font-family: 'Consolas', 'Cascadia Code', monospace; }
+      .hk-label { width: 44px; font-size: 12px; color: #9aa0a6; align-self: center; flex-shrink: 0; }
+      .toggle {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 0; cursor: pointer; user-select: none;
+      }
+      .toggle input { width: 16px; height: 16px; accent-color: #5aaef0; }
+      .actions {
+        display: flex; justify-content: flex-end; gap: 8px;
+        margin-top: 22px; padding-top: 16px; border-top: 1px solid #2a2a2a;
+      }
+      button {
+        padding: 7px 14px; border-radius: 4px; border: 1px solid #3a3a3a;
+        background: #2a2a2a; color: #e6e6e6; font-family: inherit; font-size: 12px;
+        cursor: pointer;
+      }
+      button:hover { background: #333; }
+      button.primary { background: #5aaef0; border-color: #5aaef0; color: #1e1e1e; }
+      button.primary:hover { background: #6bb8f5; }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .status {
+        margin-top: 6px; padding: 8px 10px; border-radius: 4px;
+        background: #252525; color: #9aa0a6; font-size: 11px;
+        display: none;
+      }
+      .status.ok { background: #1e3a25; color: #6dd58c; }
+      .status.err { background: #3a1e1e; color: #f0888a; }
+      .recording { color: #f0888a; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Settings</h1>
+      <div class="sub">OC Voice to Text</div>
+
+      <div class="row">
+        <label>Recording shortcut</label>
+        <div class="hotkey-wrap">
+          <span class="hk-label">Start</span>
+          <input type="text" id="startHotkey" readonly placeholder="Click 'Record' to capture" />
+          <button id="startRecordBtn" type="button">Record</button>
+        </div>
+        <div class="hotkey-wrap" style="margin-top:6px;">
+          <span class="hk-label">Stop</span>
+          <input type="text" id="stopHotkey" readonly placeholder="Click 'Record' to capture" />
+          <button id="stopRecordBtn" type="button">Record</button>
+        </div>
+        <label class="toggle" style="margin-top:8px;">
+          <input type="checkbox" id="sameAsStart" />
+          <span>Same as start (toggle mode)</span>
+        </label>
+        <div class="hint" id="hotkeyHint">Capture any combination — 1, 2, 3 or more keys. Esc cancels, Backspace clears.</div>
+        <div class="status err" id="hotkeyErr" style="display:none;"></div>
+      </div>
+
+      <div class="row">
+        <label>Language</label>
+        <select id="language">
+          <option value="auto">Auto-detect (recommended)</option>
+          <option value="en">English</option>
+          <option value="de">German</option>
+          <option value="ru">Russian</option>
+        </select>
+        <div class="hint">Auto-detect is reliable with the small/large models.</div>
+      </div>
+
+      <div class="row">
+        <label>Model</label>
+        <select id="model">
+          <option value="tiny">tiny — fastest, lowest accuracy (~75 MB)</option>
+          <option value="base">base — fast, decent accuracy (~140 MB)</option>
+          <option value="small">small — recommended (~460 MB)</option>
+          <option value="medium">medium — high accuracy (~1.5 GB)</option>
+          <option value="large-v3">large-v3 — best accuracy (~3 GB)</option>
+        </select>
+        <div class="hint" id="modelHint">Loading…</div>
+      </div>
+
+      <div class="row">
+        <label class="toggle">
+          <input type="checkbox" id="autoPaste" />
+          <span>Auto-paste transcription into focused app</span>
+        </label>
+        <div class="hint">If disabled, the text is copied to clipboard only.</div>
+      </div>
+
+      <div class="row">
+        <label class="toggle">
+          <input type="checkbox" id="autostart" />
+          <span>Start with Windows</span>
+        </label>
+        <div class="hint">Run the app minimized to the system tray on login.</div>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="actions">
+        <button type="button" id="cancelBtn">Cancel</button>
+        <button type="button" id="saveBtn" class="primary">Save</button>
+      </div>
+    </div>
+    <script src="settings.js"></script>
+  </body>
+</html>

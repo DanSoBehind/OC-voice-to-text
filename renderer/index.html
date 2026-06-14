@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';" />
+    <title>OC Voice to Text</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #1e1e1e;
+        color: #e6e6e6;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 13px;
+        overflow: hidden;
+        user-select: none;
+      }
+      .app {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #4a4a4a;
+        flex-shrink: 0;
+        transition: background 0.15s;
+      }
+      .dot.idle {
+        background: #4a4a4a;
+      }
+      .dot.starting {
+        background: #f1c40f;
+        animation: pulse 0.5s ease-in-out infinite;
+      }
+      .dot.recording {
+        background: #e74c3c;
+        animation: pulse 1s ease-in-out infinite;
+      }
+      .dot.transcribing {
+        background: #f1c40f;
+      }
+      .dot.done {
+        background: #2ecc71;
+      }
+      .dot.error {
+        background: #e67e22;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+      }
+      .status {
+        flex: 1;
+        min-width: 0;
+      }
+      .status .label {
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .status .detail {
+        color: #9aa0a6;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .close {
+        background: transparent;
+        color: #9aa0a6;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
+      .close:hover {
+        color: #e6e6e6;
+      }
+      .iconbtn {
+        background: transparent;
+        color: #9aa0a6;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
+      .iconbtn:hover {
+        color: #e6e6e6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div id="dot" class="dot idle"></div>
+      <div class="status">
+        <div id="label" class="label">Idle</div>
+        <div id="detail" class="detail">Ctrl+Shift+Space to start</div>
+      </div>
+      <button id="settings" class="iconbtn" title="Settings" aria-label="Settings">⚙</button>
+      <button id="close" class="close" title="Hide">×</button>
+    </div>
+    <script src="renderer.js"></script>
+  </body>
+</html>

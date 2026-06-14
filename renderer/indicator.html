@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';" />
+    <title>indicator</title>
+    <style>
+      html, body {
+        margin: 0; padding: 0;
+        background: transparent;
+        overflow: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+      .indicator {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      .dot {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #e74c3c;
+        transform: translateX(-50%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="indicator" id="indicator">
+      <div class="dot" id="dot"></div>
+    </div>
+    <script src="indicator.js"></script>
+  </body>
+</html>
